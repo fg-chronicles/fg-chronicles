@@ -9,9 +9,9 @@
             text-align: center;
             font-family: Arial;
         }
-        img {
-            width: 80%;
-            margin: 20px 0;
+        a {
+            color: cyan;
+            font-size: 20px;
         }
     </style>
 </head>
@@ -19,9 +19,45 @@
 
 <h1>FG Chronicles</h1>
 
-<img src="page1.jpg">
-<img src="page2.png">
-<img src="page3.png">
+<h2>Next Release In:</h2>
+<h3 id="countdown"></h3>
+
+<br>
+<a href="chapters.html">View Chapters</a>
+
+<script>
+function getNextWednesday5PM() {
+    let now = new Date();
+    let next = new Date();
+
+    let day = now.getDay();
+    let daysUntilWed = (3 - day + 7) % 7;
+    if (daysUntilWed === 0 && now.getHours() >= 17) {
+        daysUntilWed = 7;
+    }
+
+    next.setDate(now.getDate() + daysUntilWed);
+    next.setHours(17, 0, 0, 0);
+
+    return next;
+}
+
+function updateCountdown() {
+    let now = new Date();
+    let target = getNextWednesday5PM();
+    let diff = target - now;
+
+    let days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    let hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    let minutes = Math.floor((diff / (1000 * 60)) % 60);
+    let seconds = Math.floor((diff / 1000) % 60);
+
+    document.getElementById("countdown").innerText =
+        days + "d " + hours + "h " + minutes + "m " + seconds + "s";
+}
+
+setInterval(updateCountdown, 1000);
+</script>
 
 </body>
 </html>
