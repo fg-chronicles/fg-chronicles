@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chapter 1</title>
+
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            text-align: center;
+            font-family: Arial;
+            margin: 0;
+        }
+
+        img {
+            width: 100%;
+            max-width: 900px;
+        }
+
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 18px;
+        }
+
+        .rating {
+            margin-top: 20px;
+        }
+
+        .comments {
+            margin-top: 40px;
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>Chapter 1</h1>
+
+<img id="comicPage" src="CH1page1.png">
+
+<br>
+
+<button onclick="prevPage()">Previous</button>
+<button onclick="nextPage()">Next</button>
+
+<div class="rating">
+    <h3>Rate this page</h3>
+
+    <button onclick="like()">👍 Like</button>
+    <span id="likes">0</span>
+
+    <button onclick="dislike()">👎 Dislike</button>
+    <span id="dislikes">0</span>
+</div>
+
+<br>
+<a href="../chapters.html" style="color:cyan;">Back to Chapters</a>
+
+<!-- COMMENTS -->
+<div class="comments">
+    <h2>Comments</h2>
+
+    <script src="https://giscus.app/client.js"
+        data-repo="fg-chronicles/fg-chronicles.github.io"
+        data-repo-id="R_kgDORvxvvg"
+        data-category="General"
+        data-category-id="DIC_kwDORvxvvs4C6VcZ"
+        data-mapping="pathname"
+        data-theme="dark"
+        crossorigin="anonymous"
+        async>
+    </script>
+</div>
+
+<!-- FIREBASE + LOGIC -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+// 🔴 REPLACE THIS WITH YOUR FIREBASE CONFIG
+const firebaseConfig = {
+  apiKey: "AIzaSyAj9ArjJqfk5PrV5l_zDfO68L_5RlO5XMs",
+  authDomain: "fg-chronicles.firebaseapp.com",
+  projectId: "fg-chronicles"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// PAGE SYSTEM
+let currentPage = 1;
+let totalPages = 3; // 🔴 CHANGE THIS
+
+function getPageId() {
+    return "CH1page" + currentPage;
+}
+
+// UPDATE PAGE
+async function updatePage() {
+    document.getElementById("comicPage").src = "CH1page" + currentPage + ".png";
+    loadCounts();
+}
+
+// LOAD COUNTS
+async function loadCounts() {
+    let ref = doc(db, "ratings", getPageId());
+    let snap = await getDoc(ref);
+
+    if (!snap.exists()) {
+        await setDoc(ref, { likes: 0, dislikes: 0 });
+    }
+
+    let data = (await getDoc(ref)).data();
+    document.getElementById("likes").innerText = data.likes;
+    document.getElementById("dislikes").innerText = data.dislikes;
+}
+
+// LIKE
+window.like = async function() {
+    let ref = doc(db, "ratings", getPageId());
+    await updateDoc(ref, { likes: increment(1) });
+    loadCounts();
+}
+
+// DISLIKE
+window.dislike = async function() {
+    let ref = doc(db, "ratings", getPageId());
+    await updateDoc(ref, { dislikes: increment(1) });
+    loadCounts();
+}
+
+// NAVIGATION
+window.nextPage = function() {
+    if (currentPage < totalPages) {
+        currentPage++;
+        updatePage();
+    }
+}
+
+window.prevPage = function() {
+    if (currentPage > 1) {
+        currentPage--;
+        updatePage();
+    }
+}
+
+// KEYBOARD
+document.addEventListener("keydown", function(e) {
+    if (e.key === "ArrowRight") nextPage();
+    if (e.key === "ArrowLeft") prevPage();
+});
+
+// SWIPE
+let startX = 0;
+let endX = 0;
+
+document.addEventListener("touchstart", function(e) {
+    startX = e.changedTouches[0].screenX;
+});
+
+document.addEventListener("touchend", function(e) {
+    endX = e.changedTouches[0].screenX;
+    handleSwipe();
+});
+
+function handleSwipe() {
+    let diff = startX - endX;
+
+    if (Math.abs(diff) > 50) {
+        if (diff > 0) nextPage();
+        else prevPage();
+    }
+}
+
+// INITIAL LOAD
+updatePage();
+</script>
+
+</body>
+</html>
