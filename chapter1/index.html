@@ -61,7 +61,7 @@
 <a href="../chapters.html" style="color:cyan;">Back to Chapters</a>
 
 <!-- COMMENTS -->
-<div class="comments">
+<!-- <div class="comments">
     <h2>Comments</h2>
 
     <script src="https://giscus.app/client.js"
@@ -75,13 +75,26 @@
         crossorigin="anonymous"
         async>
     </script>
-</div>
+</div> -->
 
+<div class="comments">
+    <h2>Comments</h2>
+
+    <input id="nameInput" placeholder="Your name"><br><br>
+    <textarea id="commentInput" placeholder="Write a comment..."></textarea><br><br>
+    <button onclick="postComment()">Post</button>
+
+    <div id="commentsList"></div>
+</div>
+    
 <!-- FIREBASE + LOGIC -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } 
+import { collection, addDoc, getDocs, query, orderBy } 
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const chapterId = "CH1"; // 🔴 CHANGE PER CHAPTER
 
 // 🔴 REPLACE THIS WITH YOUR FIREBASE CONFIG
 const firebaseConfig = {
@@ -93,6 +106,48 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// POST COMMENT
+window.postComment = async function() {
+    let name = document.getElementById("nameInput").value.trim();
+    let text = document.getElementById("commentInput").value.trim();
+
+    if (!name || !text) return;
+
+    await addDoc(collection(db, "comments", chapterId, "messages"), {
+        name: name,
+        text: text,
+        timestamp: Date.now()
+    });
+
+    document.getElementById("commentInput").value = "";
+    loadComments();
+}
+
+// LOAD COMMENTS
+async function loadComments() {
+    let q = query(
+        collection(db, "comments", chapterId, "messages"),
+        orderBy("timestamp", "desc")
+    );
+
+    let snapshot = await getDocs(q);
+
+    let container = document.getElementById("commentsList");
+    container.innerHTML = "";
+
+    snapshot.forEach(doc => {
+        let c = doc.data();
+
+        let date = new Date(c.timestamp).toLocaleString();
+
+        let div = document.createElement("div");
+        div.className = "comment";
+        div.innerHTML = `<b>${c.name}</b> (${date})<br>${c.text}`;
+
+        container.appendChild(div);
+    });
+}
+    
 // PAGE SYSTEM
 let currentPage = 1;
 let totalPages = 3; // 🔴 CHANGE THIS
@@ -180,6 +235,7 @@ function handleSwipe() {
 
 // INITIAL LOAD
 updatePage();
+loadComments();
 </script>
 
 </body>
