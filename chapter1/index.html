@@ -143,7 +143,12 @@ async function loadComments() {
 
         let div = document.createElement("div");
         div.className = "comment";
-        div.innerHTML = `<b>${c.name}</b> (${date})<br>${c.text}`;
+        div.innerHTML = `
+            <b>${c.name}</b>
+            <span class="date">(${date})</span>
+            <br>
+            ${c.text}
+        `;
 
         container.appendChild(div);
     });
@@ -232,6 +237,40 @@ function handleSwipe() {
         if (diff > 0) nextPage();
         else prevPage();
     }
+}
+
+.comments {
+    margin-top: 40px;
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
+
+    /* 🔥 adds space at bottom of page */
+    padding-bottom: 120px;
+}
+
+.comment {
+    border-bottom: 1px solid #444;
+
+    /* 🔥 MORE SPACE BETWEEN COMMENTS */
+    padding: 18px 0;
+    margin-bottom: 18px;
+    line-height: 1.5;
+}
+
+.comment b {
+    color: #4da3ff; /* 🔵 name = blue */
+}
+
+.comment span {
+    color: gray; /* (we’ll fix date below properly) */
+}
+
+.date {
+    color: gray;
+    font-size: 14px;
+    margin-left: 6px;
 }
 
 // INITIAL LOAD
