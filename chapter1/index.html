@@ -27,11 +27,36 @@
             margin-top: 20px;
         }
 
+        /* Combined and fixed .comments styling */
         .comments {
             margin-top: 40px;
             width: 80%;
             margin-left: auto;
             margin-right: auto;
+            text-align: left;
+            padding-bottom: 120px; /* 🔥 adds space at bottom of page */
+        }
+
+        /* Moved from inside the Javascript */
+        .comment {
+            border-bottom: 1px solid #444;
+            padding: 18px 0; /* 🔥 MORE SPACE BETWEEN COMMENTS */
+            margin-bottom: 18px;
+            line-height: 1.5;
+        }
+
+        .comment b {
+            color: #4da3ff; /* 🔵 name = blue */
+        }
+
+        .comment span {
+            color: gray; 
+        }
+
+        .date {
+            color: gray;
+            font-size: 14px;
+            margin-left: 6px;
         }
     </style>
 </head>
@@ -60,23 +85,6 @@
 <br>
 <a href="../chapters.html" style="color:cyan;">Back to Chapters</a>
 
-<!-- COMMENTS -->
-<!-- <div class="comments">
-    <h2>Comments</h2>
-
-    <script src="https://giscus.app/client.js"
-        data-repo="fg-chronicles/fg-chronicles"
-        data-repo-id="R_kgDORvxvvg"
-        data-category="General"
-        data-category-id="DIC_kwDORvxvvs4C6VcZ"
-        data-mapping="specific"
-        data-term="CH1"
-        data-theme="dark"
-        crossorigin="anonymous"
-        async>
-    </script>
-</div> -->
-
 <div class="comments">
     <h2>Comments</h2>
 
@@ -87,7 +95,6 @@
     <div id="commentsList"></div>
 </div>
     
-<!-- FIREBASE + LOGIC -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { 
@@ -169,114 +176,4 @@ async function updatePage() {
 }
 
 // LOAD COUNTS
-async function loadCounts() {
-    let ref = doc(db, "ratings", getPageId());
-    let snap = await getDoc(ref);
-
-    if (!snap.exists()) {
-        await setDoc(ref, { likes: 0, dislikes: 0 });
-    }
-
-    let data = (await getDoc(ref)).data();
-    document.getElementById("likes").innerText = data.likes;
-    document.getElementById("dislikes").innerText = data.dislikes;
-}
-
-// LIKE
-window.like = async function() {
-    let ref = doc(db, "ratings", getPageId());
-    await updateDoc(ref, { likes: increment(1) });
-    loadCounts();
-}
-
-// DISLIKE
-window.dislike = async function() {
-    let ref = doc(db, "ratings", getPageId());
-    await updateDoc(ref, { dislikes: increment(1) });
-    loadCounts();
-}
-
-// NAVIGATION
-window.nextPage = function() {
-    if (currentPage < totalPages) {
-        currentPage++;
-        updatePage();
-    }
-}
-
-window.prevPage = function() {
-    if (currentPage > 1) {
-        currentPage--;
-        updatePage();
-    }
-}
-
-// KEYBOARD
-document.addEventListener("keydown", function(e) {
-    if (e.key === "ArrowRight") nextPage();
-    if (e.key === "ArrowLeft") prevPage();
-});
-
-// SWIPE
-let startX = 0;
-let endX = 0;
-
-document.addEventListener("touchstart", function(e) {
-    startX = e.changedTouches[0].screenX;
-});
-
-document.addEventListener("touchend", function(e) {
-    endX = e.changedTouches[0].screenX;
-    handleSwipe();
-});
-
-function handleSwipe() {
-    let diff = startX - endX;
-
-    if (Math.abs(diff) > 50) {
-        if (diff > 0) nextPage();
-        else prevPage();
-    }
-}
-
-.comments {
-    margin-top: 40px;
-    width: 80%;
-    margin-left: auto;
-    margin-right: auto;
-    text-align: left;
-
-    /* 🔥 adds space at bottom of page */
-    padding-bottom: 120px;
-}
-
-.comment {
-    border-bottom: 1px solid #444;
-
-    /* 🔥 MORE SPACE BETWEEN COMMENTS */
-    padding: 18px 0;
-    margin-bottom: 18px;
-    line-height: 1.5;
-}
-
-.comment b {
-    color: #4da3ff; /* 🔵 name = blue */
-}
-
-.comment span {
-    color: gray; /* (we’ll fix date below properly) */
-}
-
-.date {
-    color: gray;
-    font-size: 14px;
-    margin-left: 6px;
-}
-
-// INITIAL LOAD
-updatePage();
-loadComments();
-</script>
-
-</body>
-</html>
+async function loadCounts()
