@@ -1,1 +1,283 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chapter 2</title>
 
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            text-align: center;
+            font-family: Arial;
+            margin: 0;
+        }
+
+        /* Updated to fit 6x9 tall pages onto the screen */
+        img {
+            max-width: 100%;
+            max-height: 75vh;
+            width: auto;
+            height: auto;
+        }
+
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .rating {
+            margin-top: 20px;
+        }
+
+        .comments {
+            margin-top: 40px;
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+            padding-bottom: 120px; /* Space at bottom of page */
+        }
+
+        #commentsList {
+            text-align: center; /* Centers the posted comments */
+            margin-top: 30px;
+        }
+
+        .comment {
+            border-bottom: 1px solid #444;
+            padding: 18px 0; /* Space between comments */
+            margin-bottom: 18px;
+            line-height: 1.5;
+        }
+
+        .comment b {
+            color: #4da3ff; /* Blue name */
+        }
+
+        .comment span {
+            color: gray; 
+        }
+
+        .date {
+            color: gray;
+            font-size: 14px;
+            margin-left: 6px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>Chapter 1</h1>
+
+<img id="comicPage" src="CH2page1.png">
+
+<br>
+
+<button onclick="prevPage()">Previous</button>
+<button onclick="nextPage()">Next</button>
+
+<div class="rating">
+    <h3>Rate this page</h3>
+
+    <button onclick="like()">👍 Like</button>
+    <span id="likes">0</span>
+
+    <button onclick="dislike()">👎 Dislike</button>
+    <span id="dislikes">0</span>
+</div>
+
+<br>
+<a href="../chapters.html" style="color:cyan;">Back to Chapters</a>
+
+<div class="comments">
+    <h2>Comments</h2>
+
+    <input id="nameInput" placeholder="Your name" style="padding: 5px; font-size: 16px;"><br><br>
+    <textarea id="commentInput" placeholder="Write a comment..." style="width: 80%; height: 80px; padding: 5px; font-size: 16px;"></textarea><br><br>
+    <button onclick="postComment()">Post</button>
+
+    <div id="commentsList"></div>
+</div>
+    
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { 
+    getFirestore, doc, getDoc, setDoc, updateDoc, increment,
+    collection, addDoc, getDocs, query, orderBy
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const chapterId = "CH2"; // 🔴 CHANGE PER CHAPTER
+
+// 🔴 REPLACE THIS WITH YOUR FIREBASE CONFIG
+const firebaseConfig = {
+  apiKey: "AIzaSyAj9ArjJqfk5PrV5l_zDfO68L_5RlO5XMs",
+  authDomain: "fg-chronicles.firebaseapp.com",
+  projectId: "fg-chronicles"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// PAGE SYSTEM
+let currentPage = 1;
+let totalPages = 20; // 🔴 CHANGE THIS
+
+function getPageId() {
+    return "CH2page" + currentPage;
+}
+
+// UPDATE PAGE
+window.updatePage = async function() {
+    // 1. Instantly update image
+    document.getElementById("comicPage").src = "CH2page" + currentPage + ".png";
+    // 2. Try to load counts
+    await loadCounts();
+}
+
+// LOAD COUNTS
+async function loadCounts() {
+    try {
+        let ref = doc(db, "ratings", getPageId());
+        let snap = await getDoc(ref);
+
+        if (!snap.exists()) {
+            await setDoc(ref, { likes: 0, dislikes: 0 });
+            document.getElementById("likes").innerText = "0";
+            document.getElementById("dislikes").innerText = "0";
+        } else {
+            let data = snap.data();
+            document.getElementById("likes").innerText = data.likes || 0;
+            document.getElementById("dislikes").innerText = data.dislikes || 0;
+        }
+    } catch (error) {
+        console.error("Error loading likes/dislikes:", error);
+    }
+}
+
+// LIKE
+window.like = async function() {
+    try {
+        let ref = doc(db, "ratings", getPageId());
+        await updateDoc(ref, { likes: increment(1) });
+        loadCounts();
+    } catch (error) {
+        console.error("Error liking:", error);
+    }
+}
+
+// DISLIKE
+window.dislike = async function() {
+    try {
+        let ref = doc(db, "ratings", getPageId());
+        await updateDoc(ref, { dislikes: increment(1) });
+        loadCounts();
+    } catch (error) {
+        console.error("Error disliking:", error);
+    }
+}
+
+// POST COMMENT
+window.postComment = async function() {
+    try {
+        let name = document.getElementById("nameInput").value.trim();
+        let text = document.getElementById("commentInput").value.trim();
+
+        if (!name || !text) return;
+
+        await addDoc(collection(db, "comments", chapterId, "messages"), {
+            name: name,
+            text: text,
+            timestamp: Date.now()
+        });
+
+        document.getElementById("commentInput").value = "";
+        loadComments();
+    } catch (error) {
+        console.error("Error posting comment:", error);
+        alert("Could not post comment. Check the console for errors.");
+    }
+}
+
+// LOAD COMMENTS
+async function loadComments() {
+    try {
+        let q = query(
+            collection(db, "comments", chapterId, "messages"),
+            orderBy("timestamp", "desc")
+        );
+
+        let snapshot = await getDocs(q);
+        let container = document.getElementById("commentsList");
+        container.innerHTML = "";
+
+        snapshot.forEach(doc => {
+            let c = doc.data();
+            let date = new Date(c.timestamp).toLocaleString();
+
+            let div = document.createElement("div");
+            div.className = "comment";
+            div.innerHTML = `
+                <b>${c.name}</b>
+                <span class="date">(${date})</span>
+                <br>
+                ${c.text}
+            `;
+            container.appendChild(div);
+        });
+    } catch (error) {
+        console.error("Error loading comments:", error);
+    }
+}
+
+// NAVIGATION
+window.nextPage = function() {
+    if (currentPage < totalPages) {
+        currentPage++;
+        window.updatePage();
+    }
+}
+
+window.prevPage = function() {
+    if (currentPage > 1) {
+        currentPage--;
+        window.updatePage();
+    }
+}
+
+// KEYBOARD
+document.addEventListener("keydown", function(e) {
+    if (e.key === "ArrowRight") window.nextPage();
+    if (e.key === "ArrowLeft") window.prevPage();
+});
+
+// SWIPE
+let startX = 0;
+let endX = 0;
+
+document.addEventListener("touchstart", function(e) {
+    startX = e.changedTouches[0].screenX;
+});
+
+document.addEventListener("touchend", function(e) {
+    endX = e.changedTouches[0].screenX;
+    handleSwipe();
+});
+
+function handleSwipe() {
+    let diff = startX - endX;
+
+    if (Math.abs(diff) > 50) {
+        if (diff > 0) window.nextPage();
+        else window.prevPage();
+    }
+}
+
+// INITIAL LOAD
+window.updatePage();
+loadComments();
+</script>
+
+</body>
+</html>
