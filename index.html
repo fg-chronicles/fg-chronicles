@@ -1,55 +1,30 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>FG Chronicles</title>
-    <style>
-        body {
-            background-color: black;
-            color: white;
-            text-align: center;
-            font-family: Arial;
-        }
-        a {
-            color: cyan;
-            font-size: 20px;
-        }
-    </style>
-</head>
-<body>
-
-<h1>FG Chronicles</h1>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
-
-
-<p><b>Hello FG! Welcome to the Official FG Chronicles website!</b></p>
-<p>Here is where we will publish new chapters in an easily viewable format for your reading pleasure!</p>
-    
-<h2>Next Release In:</h2>
-<h3 id="countdown"></h3>
-
 <script>
-function getNextWednesday5PM() {
+function getNext25th5PM() {
     let now = new Date();
-    let next = new Date();
+    let target = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        25,
+        17, 0, 0, 0
+    );
 
-    let day = now.getDay();
-    let daysUntilWed = (3 - day + 7) % 7;
-    if (daysUntilWed === 0 && now.getHours() >= 17) {
-        daysUntilWed = 7;
+    // If it's already past the 25th at 5:00 PM,
+    // move the target to next month's 25th.
+    if (now >= target) {
+        target = new Date(
+            now.getFullYear(),
+            now.getMonth() + 1,
+            25,
+            17, 0, 0, 0
+        );
     }
 
-    next.setDate(now.getDate() + daysUntilWed);
-    next.setHours(17, 0, 0, 0);
-
-    return next;
+    return target;
 }
 
 function updateCountdown() {
     let now = new Date();
-    let target = getNextWednesday5PM();
+    let target = getNext25th5PM();
     let diff = target - now;
 
     let days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -61,20 +36,7 @@ function updateCountdown() {
         days + "d " + hours + "h " + minutes + "m " + seconds + "s";
 }
 
+// Update immediately so there's no 1-second delay
+updateCountdown();
 setInterval(updateCountdown, 1000);
 </script>
-
-    <h2>Updates</h2>
-
-<div class="updates">
-    <p><b></b></p>
-    <p><b>Jul 25:</b>FG Potluck 2026: CH1 and CH2 Released</p>
-    <p><b>Mar 24:</b>Website Created</p>
-
-</div>
-
-<br>
-<a href="chapters.html">View Chapters</a>
-
-</body>
-</html>
