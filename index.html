@@ -1,3 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FG Chronicles</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            text-align: center;
+            font-family: Arial;
+        }
+        a {
+            color: cyan;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>FG Chronicles</h1>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+
+<p><b>Hello FG! Welcome to the Official FG Chronicles website!</b></p>
+<p>Here is where we will publish new chapters in an easily viewable format for your reading pleasure!</p>
+    
+<h2>Next Release In:</h2>
+<h3 id="countdown"></h3>
+
 <script>
 function getNext25th5PM() {
     let now = new Date();
@@ -8,8 +39,8 @@ function getNext25th5PM() {
         17, 0, 0, 0
     );
 
-    // If it's already past the 25th at 5:00 PM,
-    // move the target to next month's 25th.
+    // If the 25th at 5 PM has already passed this month,
+    // count down to next month's 25th at 5 PM.
     if (now >= target) {
         target = new Date(
             now.getFullYear(),
@@ -36,7 +67,20 @@ function updateCountdown() {
         days + "d " + hours + "h " + minutes + "m " + seconds + "s";
 }
 
-// Update immediately so there's no 1-second delay
 updateCountdown();
 setInterval(updateCountdown, 1000);
 </script>
+
+<h2>Updates</h2>
+
+<div class="updates">
+    <p><b></b></p>
+    <p><b>Jul 25:</b>FG Potluck 2026: CH1 and CH2 Released</p>
+    <p><b>Mar 24:</b>Website Created</p>
+</div>
+
+<br>
+<a href="chapters.html">View Chapters</a>
+
+</body>
+</html>
